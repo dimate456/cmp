@@ -6,7 +6,7 @@ function App() {
 
   const handleTerraformApply = async () => {
     try {
-      const response = await fetch('http://localhost:3001/terraform/apply', {
+      const response = await fetch('http://4.180.4.209:3001/terraform/apply', {
         method: 'POST',
       });
       if (!response.ok) throw new Error('Erreur pendant Terraform Apply');
