@@ -30,7 +30,6 @@ app.post('/terraform/apply', (req, res) => {
     });
 });
 
-
-app.listen(PORT, () => {
+app.listen(PORT, '0.0.0.0', () => {
     console.log(`Backend terraform sur le port ${PORT}`);
 });
