@@ -10,7 +10,7 @@ function App() {
   useEffect(() => {
     const fetchApps = async () => {
       try {
-        const res = await fetch('http://4.180.4.209:3001/terraform/apply');
+        const res = await fetch('http://4.180.4.209:3001/terraform/apps');
         const data = await res.json();
         setApps(data);
       } catch (error) {
