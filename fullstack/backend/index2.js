@@ -15,7 +15,13 @@ let deployedApps = [];
 
 app.post('/terraform/apply', (req, res) => {
   const { nom, port } = req.body;
-  if (!nom || !port) return res.status(400).send('nom et port requis');
+  if (!nom || !port) {
+    return res.status(400).send('Nom et port requis');
+  }
+
+  const exists = deployedApps.find(app => app.nom === nom && parseInt(app.port) === parseInt(port));
+  if (exists) return res.status(409).send('Application déjà déployée (même nom et port)');
+
 
   
 
