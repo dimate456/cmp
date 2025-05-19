@@ -1,10 +1,24 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import './App.css';
 
 function App() {
   const [apps, setApps] = useState([]);
   const [newApp, setNewApp] = useState({ nom: '', port: '' });
   const [responseData, setResponseData] = useState(null);
+
+  // Charger la liste des apps au chargement de la page
+  useEffect(() => {
+    const fetchApps = async () => {
+      try {
+        const res = await fetch('http://4.180.4.209:3001/terraform/apply');
+        const data = await res.json();
+        setApps(data);
+      } catch (error) {
+        console.error("Erreur de chargement des apps :", error);
+      }
+    };
+    fetchApps();
+  }, []);
 
   const handleTerraformApply = async () => {
     try {
