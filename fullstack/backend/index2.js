@@ -30,9 +30,18 @@ app.post('/terraform/apply', (req, res) => {
     });
 });
 
-/*app.listen(PORT, '0.0.0.0', () => {
-    console.log(`Backend terraform sur le port ${PORT}`);
-});*/
+app.delete('/terraform/destroy', (req, res) => {
+  exec('echo Good_Bye_World', (error, stdout, stderr) => {
+    if (error) {
+      console.log("Erreur test minimal (destroy):", error);
+      return res.status(500).send('Error terraform destroy');
+    } else {
+      console.log("Test réussi (destroy):", stdout);
+      res.send(stdout);
+    }
+  });
+});
+
 
 app.listen(PORT, () => {
     console.log(`Backend terraform sur le port ${PORT}`);
