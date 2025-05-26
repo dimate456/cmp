@@ -2,7 +2,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { io } from 'socket.io-client';
 
-const socket = io('http://localhost:3001');
+const socket = io('http://4.180.4.209:3001');
 
 function App() {
   const [apps, setApps] = useState([]);
@@ -18,7 +18,7 @@ function App() {
   }, []);
 
   useEffect(() => {
-    fetch('http://localhost:3001/terraform/apps')
+    fetch('http://4.180.4.209:3001/terraform/apps')
       .then(res => res.json())
       .then(setApps);
   }, []);
@@ -40,7 +40,7 @@ function App() {
   }, [apps]);
 
   const handleCreate = async () => {
-    const response = await fetch('http://localhost:3001/terraform/apply', {
+    const response = await fetch('http://4.180.4.209:3001/terraform/apply', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(newApp)
@@ -56,7 +56,7 @@ function App() {
   };
 
   const handleDelete = async (nom) => {
-    const response = await fetch('http://localhost:3001/terraform/destroy', {
+    const response = await fetch('http://4.180.4.209:3001/terraform/destroy', {
       method: 'DELETE',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ nom })
