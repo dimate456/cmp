@@ -15,7 +15,13 @@ function App() {
     socket.on('connect', () => {
       console.log('🟢 Connecté au WebSocket backend');
     });
+     // Restauration des logs sauvegardés
+    const savedLogs = localStorage.getItem('logs');
+    if (savedLogs) {
+      setLogs(JSON.parse(savedLogs));
+    }
   }, []);
+ 
 
   useEffect(() => {
     fetch('http://4.180.4.209:3001/terraform/apps')
@@ -39,6 +45,10 @@ function App() {
     });
   }, [apps]);
 
+    useEffect(() => {
+    localStorage.setItem('logs', JSON.stringify(logs));
+  }, [logs]);
+
   const handleCreate = async () => {
     const response = await fetch('http://4.180.4.209:3001/terraform/apply', {
       method: 'POST',
@@ -56,18 +66,25 @@ function App() {
   };
 
   const handleDelete = async (nom) => {
-    const response = await fetch('http://4.180.4.209:3001/terraform/destroy', {
-      method: 'DELETE',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ nom })
+  const response = await fetch('http://4.180.4.209:3001/terraform/destroy', {
+    method: 'DELETE',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ nom })
+  });
+
+  if (response.ok) {
+    setApps(prev => prev.filter(app => app.nom !== nom));
+    setLogs(prev => {
+      const updated = { ...prev };
+      delete updated[nom];
+      return updated;
     });
-    if (response.ok) {
-      setApps(prev => prev.filter(app => app.nom !== nom));
-    } else {
-      const msg = await response.text();
-      alert(`Erreur suppression: ${msg}`);
-    }
-  };
+  } else {
+    const msg = await response.text();
+    alert(`Erreur suppression: ${msg}`);
+  }
+};
+
 
   useEffect(() => {
     Object.keys(logRefs.current).forEach(nom => {
@@ -97,15 +114,15 @@ function App() {
         <button onClick={handleCreate} style={{ marginLeft: 10, marginTop: 10 }}>Créer</button>
 
         <ul style={{ marginTop: 20 }}>
-          {apps.map((app) => (
-            <li key={app.nom} style={{ marginBottom: 10 }}>
+          {apps.map((app, index) => (
+            <li key={`${app.nom}-${app.port}-${index}`} style={{ marginBottom: 10 }}>
               <strong>{app.nom}</strong> (port {app.port})
               <button
                 style={{ marginLeft: 10 }}
                 onClick={() => handleDelete(app.nom)}
               >❌ Supprimer</button>
             </li>
-          ))}
+            ))}
         </ul>
       </div>
 
@@ -119,7 +136,7 @@ function App() {
               ref={(el) => (logRefs.current[nom] = el)}
               style={{
                 height: '400px',
-                width: '900px',
+                width: '175%',
                 overflowY: 'auto',
                 backgroundColor: '#111',
                 color: '#0f0',

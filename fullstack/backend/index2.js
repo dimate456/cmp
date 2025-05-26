@@ -30,7 +30,7 @@ app.post('/terraform/apply', (req, res) => {
   const exists = deployedApps.find(app => app.nom === nom && parseInt(app.port) === parseInt(port));
   if (exists) return res.status(409).send('Application déjà déployée');
 
-  const command = `for i in {1..20}; do echo "Déploiement $i pour ${nom}:${port}"; sleep 1; done`;
+  const command = `for i in {1..4}; do echo "Déploiement $i pour ${nom}:${port}"; sleep 1; done`;
   const child = spawn('bash', ['-c', command]);
 
   child.stdout.on('data', (data) => {
@@ -68,5 +68,5 @@ io.on('connection', (socket) => {
 });
 
 server.listen(PORT, () => {
-  console.log(`✅ Serveur WebSocket + REST sur http://localhost:${PORT}`);
+  console.log(`✅ Serveur WebSocket + REST sur http://4.180.4.209:${PORT}`);
 });
