@@ -25,9 +25,10 @@ app.get('/terraform/apps', (req, res) => {
 // Déployer une app avec logs live
 app.post('/terraform/apply', (req, res) => {
   const { nom, port } = req.body;
-  if (!nom || !port) return res.status(400).send('Nom et port requis');
+  if (!nom || !port) 
+    return res.status(400).send('Nom et port requis');
 
-  const exists = deployedApps.find(app => app.nom === nom || parseInt(app.port) === parseInt(port));
+  const exists = deployedApps.find(app => app.nom === nom || parseInt(app.port) === parseInt(port)) || nom === port;
   if (exists) return res.status(409).send('Application déjà déployée');
 
   const command = `for i in {1..4}; do echo "Déploiement $i pour ${nom}:${port}"; sleep 1; done`;
