@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { io } from 'socket.io-client';
 
-const socket = io('http://4.180.4.209:3001');
+const socket = io('http://localhost:3001');
 
 function App() {
   const [apps, setApps] = useState([]);
@@ -14,7 +14,7 @@ function App() {
     window.socket = socket;
 
     socket.on('connect', () => {
-      console.log('🟢 Connecté au WebSocket backend');
+      console.log('🟢 Connecté au WebSocket localhost');
     });
 
     const savedLogs = localStorage.getItem('logs');
@@ -33,7 +33,7 @@ function App() {
 
   // Récupérer les apps actives du backend
   useEffect(() => {
-    fetch('http://4.180.4.209:3001/terraform/apps')
+    fetch('http://localhost:3001/terraform/apps')
       .then(res => res.json())
       .then(serverApps => {
         setApps(prev => {
@@ -50,10 +50,12 @@ function App() {
   useEffect(() => {
     apps.forEach(app => {
       const nom = app.nom;
-      const eventName = `output-${nom}`;
-      if (!socket.listeners(eventName).length) {
-        socket.off(eventName);
-        socket.on(eventName, (line) => {
+      const outputEvent = `output-${nom}`;
+      const destroyEvent = `destroy-complete-${nom}`;
+
+      if (!socket.listeners(outputEvent).length) {
+        socket.off(outputEvent);
+        socket.on(outputEvent, (line) => {
           setLogs(prev => ({
             ...prev,
             [nom]: {
@@ -61,6 +63,19 @@ function App() {
               lines: [...(prev[nom]?.lines || []), line]
             }
           }));
+        });
+      }
+
+      // 🔥 Écouter la fin de suppression pour effacer les logs
+      if (!socket.listeners(destroyEvent).length) {
+        socket.off(destroyEvent);
+        socket.on(destroyEvent, () => {
+          setLogs(prev => {
+            const updated = { ...prev };
+            delete updated[nom];
+            localStorage.setItem('logs', JSON.stringify(updated));
+            return updated;
+          });
         });
       }
     });
@@ -74,7 +89,7 @@ function App() {
   }, [logs]);
 
   const handleCreate = async () => {
-    const response = await fetch('http://4.180.4.209:3001/terraform/apply', {
+    const response = await fetch('http://localhost:3001/terraform/apply', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(newApp)
@@ -97,7 +112,7 @@ function App() {
   };
 
   const handleDelete = async (nom) => {
-    const response = await fetch('http://4.180.4.209:3001/terraform/destroy', {
+    const response = await fetch('http://localhost:3001/terraform/destroy', {
       method: 'DELETE',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ nom })
@@ -105,12 +120,7 @@ function App() {
 
     if (response.ok) {
       setApps(prev => prev.filter(app => app.nom !== nom));
-      setLogs(prev => {
-        const updated = { ...prev };
-        delete updated[nom];
-        localStorage.setItem('logs', JSON.stringify(updated));
-        return updated;
-      });
+      // (on ne supprime pas les logs ici, ils seront effacés par le socket destroy-complete-[nom])
     } else {
       const msg = await response.text();
       alert(`Erreur suppression: ${msg}`);
@@ -125,7 +135,7 @@ function App() {
     });
   }, [logs]);
 
-  return (
+return (
     <div style={{ display: 'flex', padding: '20px', gap: '30px' }}>
       {/* Colonne gauche */}
       <div style={{ flex: 1, marginLeft: 150 }}>
@@ -194,3 +204,4 @@ function App() {
 }
 
 export default App;
+
